@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MUJ BOT</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            margin: 50px; 
+        }
+        #chatbox { 
+            width: 80%; 
+            height: 300px;
+            max-width: 600px; 
+            margin: auto; 
+            text-align: left; 
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .user { color: blue; }
+        .bot { color: green; }
+        #userInput {
+            width: 60%;
+            max-width: 500px;
+            padding: 8px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>MUJ BOT</h2>
+    <div id="chatbox"></div>
+    <input type="text" id="userInput" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        // Inline JavaScript to avoid any file path issues
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("userInput").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    sendMessage();
+                }
+            });
+        });
+
+        function sendMessage() {
+            let userInput = document.getElementById("userInput").value;
+            if (userInput.trim() === "") return;
+            
+            let chatbox = document.getElementById("chatbox");
+            
+            // Add user message
+            let userDiv = document.createElement("div");
+            userDiv.innerHTML = `<p class="user"><b>You:</b> ${userInput}</p>`;
+            chatbox.appendChild(userDiv);
+            
+            // Clear input field
+            document.getElementById("userInput").value = "";
+            
+            // Add thinking message
+            let botDiv = document.createElement("div");
+            botDiv.innerHTML = `<p class="bot"><b>Bot:</b> Thinking...</p>`;
+            chatbox.appendChild(botDiv);
+            
+            // Scroll to bottom
+            chatbox.scrollTop = chatbox.scrollHeight;
+            
+            console.log("Sending request with message:", userInput);
+            
+            // Send request to server
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput })
+            })
+            .then(response => {
+                console.log("Response received:", response);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Data received:", data);
+                botDiv.innerHTML = `<p class="bot"><b>Bot:</b> ${data.response}</p>`;
+                chatbox.scrollTop = chatbox.scrollHeight;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                botDiv.innerHTML = `<p class="bot" style="color:red"><b>Error:</b> Failed to get response</p>`;
+                chatbox.scrollTop = chatbox.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
+
